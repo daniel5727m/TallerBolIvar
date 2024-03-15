@@ -1,0 +1,1 @@
+hola{{$name}}, los correos con gmail funcionan
