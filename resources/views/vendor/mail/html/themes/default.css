@@ -45,7 +45,7 @@ h1 {
     text-align: left;
 }
 td{
-    color: #f3efef;  
+    color: #f3efef;
 }
 h2 {
     font-size: 16px;
@@ -92,7 +92,7 @@ p.sub {
     -premailer-width: 100%;
     margin: 0;
     padding: 0;
-    width: 100%;
+    width: 500%;
 }
 
 /* Header */
@@ -119,12 +119,12 @@ p.sub {
 
 img{
     width: 180px; height: 180px;
-    
+
   }
 
 /* Body */
 p{
-    color: #171818; 
+    color: #171818;
 }
 .body {
     -premailer-cellpadding: 0;
@@ -199,7 +199,7 @@ p{
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
     border-bottom-left-radius: 20px;
-    
+
 }
 
 .table th {
@@ -339,7 +339,7 @@ div.card {
     margin: 0 auto; /* Added */
     float: none; /* Added */
     margin-bottom: 5px; /* Added */
-  
+
     border-radius: .90rem;
     border: 2px solid;
     color: #eef0ee;

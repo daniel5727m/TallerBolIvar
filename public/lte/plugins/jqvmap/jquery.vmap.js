@@ -121,7 +121,7 @@ var JQVMap = function (params) {
     }
   });
 
-  this.canvas = new VectorCanvas(this.width, this.height, params);
+  this.canvas = new (this.width, this.height, params);
   params.container.append(this.canvas.canvas);
 
   this.makeDraggable();

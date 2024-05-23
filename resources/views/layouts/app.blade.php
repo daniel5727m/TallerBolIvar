@@ -1,4 +1,3 @@
-
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -30,9 +29,14 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="{{asset('lte/dist/css/adminlte.min.css')}}">
   <link rel="icon" type="image/png" sizes="16x16" href='{{url("/img/navegador.png")}}'>
-</head>
-<body class="hold-transition sidebar-mini layout-fixed">
 
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="{{asset('lte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css')}}">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.2.0/css/fixedHeader.bootstrap.min.css">
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
 
 <div class="preloader flex-column justify-content-center align-items-center">
 
@@ -54,9 +58,6 @@
           </section>
       </div>
   </div>
-
-
-
 
 <!-- jQuery -->
 <script src="{{asset('lte/plugins/jquery/jquery.min.js')}}"></script>
@@ -104,32 +105,64 @@
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap.min.js"></script>
 
-
-
-
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.2.0/css/fixedHeader.bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
 <!-- Page specific script -->
 <script>
-  $(document).ready(function() {
-    $('#example').DataTable( {
-      responsive: true,
-        "language": {
-            "lengthMenu": "Mostrar _MENU_ registros por pagina",
-            "zeroRecords": "Nada encontrado - Disculpa",
-            "info": "Mostrando la pagina _PAGE_ de _PAGES_",
-            "infoEmpty": "No se encontraron registros",
-            "infoFiltered": "(Filtrado de _MAX_ registros totales)",
-            "search": "Buscar:",
-            "paginate": {
-              "next": "Siguiente",
-              "previous": "Anterior"
-            }
-        }
-    } );
-    new $.fn.dataTable.FixedHeader( table );
-} );
+ $(document).ready(function() {
+  var table = $('#example').DataTable({
+    responsive: true,
+    language: {
+      lengthMenu: "Mostrar  _MENU_  registros por página",
+      zeroRecords: "No se encontraron Registros de solicitudes",
+      info: "Mostrando la página _PAGE_ de _PAGES_",
+      infoEmpty: "No records available",
+      infoFiltered: "(Filtrado de _MAX_ registros totales)",
+      search: " Buscar:",
+      paginate: {
+        next: "Siguiente",
+        previous: "Anterior"
+      }
+    }
+  });
+
+  function actualizarTotal() {
+    var filasVisibles = table.rows({ search: 'applied' }).count();
+    var filasUnicas = table.rows({ search: 'applied' }).data().toArray().reduce(function(acc, curr) {
+      if (!acc.includes(curr[0])) {
+        acc.push(curr[0]);
+      }
+      return acc;
+    }, []).length;
+
+    // Mostrar el total solo si hay búsqueda activa o si hay resultados repetidos
+    if (table.search() || filasVisibles > filasUnicas) {
+      var total = 0;
+      table.rows({ search: 'applied' }).every(function() {
+        var precio = parseFloat($(this.node()).find('.precio-total').text().replace('$', '').replace(',', ''));
+        total += isNaN(precio) ? 0 : precio;
+      });
+     var totalFormateado = total.toLocaleString(); // Formatear el total con separador de miles
+     $('#total-row td:last-child').text('$' + totalFormateado).css({
+    'color': 'white', 'font-weight': 'bold', 'text-align': 'right' // Alinear el texto a la derecha
+});
+
+    } else {
+      $('#total-row td:last-child').text('').css('color', ''); // Limpiar el total si no hay búsqueda activa o si no hay resultados repetidos y restaurar el color por defecto
+    }
+  }
+
+  actualizarTotal();
+
+  table.on('draw', function() {
+    actualizarTotal();
+  });
+
+  new $.fn.dataTable.FixedHeader(table);
+});
+
 </script>
 
 <style>

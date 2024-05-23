@@ -425,3 +425,8 @@ div.card.caro{
     text-align: center;
   }
 
+.img-circle {
+border-radius: 50%;  /* Esto hace la imagen completamente circular */
+width: 100px;        /* Asegúrate de definir un tamaño específico */
+height: 100px;       /* El alto y el ancho deben ser iguales para que sea un círculo perfecto */
+}

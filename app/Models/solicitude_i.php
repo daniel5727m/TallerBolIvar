@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class solicitude extends Model
+class solicitud extends Model
 {
     /**
      * The database table used by the model.
@@ -25,8 +25,8 @@ class solicitude extends Model
      *
      * @var array
      */
-    
+
     protected $fillable = ['nro_solicitud ','cod_tipo_solicitud', 'des_solicitud', 'cod_estado_solicitud','cod_inmueble','motivo_solicitud','tipo_solicitante','user_id','fecha_agendamiento'];
 
-    
+
 }

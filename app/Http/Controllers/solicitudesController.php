@@ -64,80 +64,89 @@ class solicitudesController extends Controller
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
-    {
-        $objeto = new MenuController();
-        $menu = $objeto->misPerfiles();
+{
+    // Obtener los perfiles del menú
+    $objeto = new MenuController();
+    $menu = $objeto->misPerfiles();
 
-        $keyword = $request->get('search');
-        $perPage = 25;
+    // Obtener el término de búsqueda del formulario
+    $keyword = $request->get('search');
+    $perPage = 25;
 
-        if (!empty($keyword)) {
-            $solicitudes = solicitude::where('tipo_trabajo', 'LIKE', "%$keyword%")
-                //->orWhere('idturno', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_Tubo', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_Tubo_cur', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_Tubo_esc', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_Tubo_escdos', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_Tubo_ab', 'LIKE', "%$keyword%")
-                ->orWhere('tipo_material', 'LIKE', "%$keyword%")
-                ->orWhere('espesor', 'LIKE', "%$keyword%")
-                ->orWhere('longitud_tubo', 'LIKE', "%$keyword%")
-                ->orWhere('angulos', 'LIKE', "%$keyword%")
-                ->orWhere('hay_soldadura', 'LIKE', "%$keyword%")
-                ->orWhere('numero_soldadura', 'LIKE', "%$keyword%")
-                ->orWhere('numero_tubos', 'LIKE', "%$keyword%")
-                ->orWhere('numero_dobleces', 'LIKE', "%$keyword%")
-                ->orWhere('numero_curvas', 'LIKE', "%$keyword%")
-                ->orWhere('hay_cortes', 'LIKE', "%$keyword%")
-                ->orWhere('numero_cortes', 'LIKE', "%$keyword%")
-                ->orWhere('sentido', 'LIKE', "%$keyword%")
-                ->orWhere('plantilla', 'LIKE', "%$keyword%")
-                ->orWhere('ancho', 'LIKE', "%$keyword%")
-                ->orWhere('altura', 'LIKE', "%$keyword%")
-                ->orWhere('radio', 'LIKE', "%$keyword%")
-                ->orWhere('largo', 'LIKE', "%$keyword%")
-                ->orWhere('hay_pasamanos', 'LIKE', "%$keyword%")
-                ->orWhere('numero_pasamanos', 'LIKE', "%$keyword%")
-                ->orWhere('numero_pasamanos_uno', 'LIKE', "%$keyword%")
-                ->orWhere('diametro_dos', 'LIKE', "%$keyword%")
-                ->orWhere('largo_total', 'LIKE', "%$keyword%")
-                ->orWhere('largo_parte_recta', 'LIKE', "%$keyword%")
-                ->orWhere('a', 'LIKE', "%$keyword%")
-                ->orWhere('b', 'LIKE', "%$keyword%")
-                ->orWhere('estado', 'LIKE', "%$keyword%")
-                ->orWhere('precio_soldadura', 'LIKE', "%$keyword%")
-                ->orWhere('precio_cortes', 'LIKE', "%$keyword%")
-                ->orWhere('costo_doblex', 'LIKE', "%$keyword%")
-                ->orWhere('costo_curvax', 'LIKE', "%$keyword%")
-                ->orWhere('precio_total', 'LIKE', "%$keyword%")
-                ->orWhere('hipotenusa', 'LIKE', "%$keyword%")
-                ->orWhere('anguloCurva', 'LIKE', "%$keyword%")
-                ->orWhere('longitudArco', 'LIKE', "%$keyword%")
-                ->orWhere('huella', 'LIKE', "%$keyword%")
-                ->orWhere('contrahuella', 'LIKE', "%$keyword%")
-                ->orWhere('diaExt', 'LIKE', "%$keyword%")
-                ->orWhere('diaInt', 'LIKE', "%$keyword%")
-                ->orWhere('anchoPel', 'LIKE', "%$keyword%")
-                ->orWhere('hipotenusaDos', 'LIKE', "%$keyword%")
-                ->orWhere('A1Dos', 'LIKE', "%$keyword%")
-                ->orWhere('Rcm', 'LIKE', "%$keyword%")
-                ->orWhere('Hcm', 'LIKE', "%$keyword%")
-                ->orWhere('zero', 'LIKE', "%$keyword%")
-                ->orWhere('costo_pasamanos', 'LIKE', "%$keyword%")
-                ->orWhere(' preciodos', 'LIKE', "%$keyword%")
-                ->orWhere(' totalCaracol', 'LIKE', "%$keyword%")
-                ->orWhere(' totalCaracolTotal', 'LIKE', "%$keyword%")
+    // Consulta para obtener las solicitudes junto con la información del cliente asociado
+    $query = DB::table('solicitudes')
+                ->select('solicitudes.*', 'users.name as cliente', 'users.telefono')
+                ->leftJoin('users', 'solicitudes.id_cliente', '=', 'users.id');
 
-                ->latest()->paginate($perPage);
-        } else {
-            $solicitudes = solicitude::latest()->paginate($perPage);
-            $solicitudes = DB::select('SELECT s.*,u.name as cliente,u.telefono FROM solicitudes s
-            left join  users u  on u.id=s.id_cliente
-        order by s.id asc');
-        }
+    // Aplicar filtro de búsqueda si se proporciona
+    if (!empty($keyword)) {
+        $solicitudes = solicitude::where('tipo_trabajo', 'LIKE', "%$keyword%")
+            //->orWhere('idturno', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_Tubo', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_Tubo_cur', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_Tubo_esc', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_Tubo_escdos', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_Tubo_ab', 'LIKE', "%$keyword%")
+            ->orWhere('tipo_material', 'LIKE', "%$keyword%")
+            ->orWhere('espesor', 'LIKE', "%$keyword%")
+            ->orWhere('longitud_tubo', 'LIKE', "%$keyword%")
+            ->orWhere('angulos', 'LIKE', "%$keyword%")
+            ->orWhere('hay_soldadura', 'LIKE', "%$keyword%")
+            ->orWhere('numero_soldadura', 'LIKE', "%$keyword%")
+            ->orWhere('numero_tubos', 'LIKE', "%$keyword%")
+            ->orWhere('numero_dobleces', 'LIKE', "%$keyword%")
+            ->orWhere('numero_curvas', 'LIKE', "%$keyword%")
+            ->orWhere('hay_cortes', 'LIKE', "%$keyword%")
+            ->orWhere('numero_cortes', 'LIKE', "%$keyword%")
+            ->orWhere('sentido', 'LIKE', "%$keyword%")
+            ->orWhere('plantilla', 'LIKE', "%$keyword%")
+            ->orWhere('ancho', 'LIKE', "%$keyword%")
+            ->orWhere('altura', 'LIKE', "%$keyword%")
+            ->orWhere('radio', 'LIKE', "%$keyword%")
+            ->orWhere('largo', 'LIKE', "%$keyword%")
+            ->orWhere('hay_pasamanos', 'LIKE', "%$keyword%")
+            ->orWhere('numero_pasamanos', 'LIKE', "%$keyword%")
+            ->orWhere('numero_pasamanos_uno', 'LIKE', "%$keyword%")
+            ->orWhere('diametro_dos', 'LIKE', "%$keyword%")
+            ->orWhere('largo_total', 'LIKE', "%$keyword%")
+            ->orWhere('largo_parte_recta', 'LIKE', "%$keyword%")
+            ->orWhere('a', 'LIKE', "%$keyword%")
+            ->orWhere('b', 'LIKE', "%$keyword%")
+            ->orWhere('estado', 'LIKE', "%$keyword%")
+            ->orWhere('precio_soldadura', 'LIKE', "%$keyword%")
+            ->orWhere('precio_cortes', 'LIKE', "%$keyword%")
+            ->orWhere('costo_doblex', 'LIKE', "%$keyword%")
+            ->orWhere('costo_curvax', 'LIKE', "%$keyword%")
+            ->orWhere('precio_total', 'LIKE', "%$keyword%")
+            ->orWhere('hipotenusa', 'LIKE', "%$keyword%")
+            ->orWhere('anguloCurva', 'LIKE', "%$keyword%")
+            ->orWhere('longitudArco', 'LIKE', "%$keyword%")
+            ->orWhere('huella', 'LIKE', "%$keyword%")
+            ->orWhere('contrahuella', 'LIKE', "%$keyword%")
+            ->orWhere('diaExt', 'LIKE', "%$keyword%")
+            ->orWhere('diaInt', 'LIKE', "%$keyword%")
+            ->orWhere('anchoPel', 'LIKE', "%$keyword%")
+            ->orWhere('hipotenusaDos', 'LIKE', "%$keyword%")
+            ->orWhere('A1Dos', 'LIKE', "%$keyword%")
+            ->orWhere('Rcm', 'LIKE', "%$keyword%")
+            ->orWhere('Hcm', 'LIKE', "%$keyword%")
+            ->orWhere('zero', 'LIKE', "%$keyword%")
+            ->orWhere('costo_pasamanos', 'LIKE', "%$keyword%")
+            ->orWhere(' preciodos', 'LIKE', "%$keyword%")
+            ->orWhere(' totalCaracol', 'LIKE', "%$keyword%")
+            ->orWhere(' totalCaracolTotal', 'LIKE', "%$keyword%")
 
-        return view('solicitudes.index', compact('solicitudes','menu'));
+            ->latest()->paginate($perPage);
+    } else {
+        $solicitudes = solicitude::latest()->paginate($perPage);
+        $solicitudes = DB::select('SELECT s.*,u.name as cliente,u.telefono FROM solicitudes s
+        left join  users u  on u.id=s.id_cliente
+    order by s.id asc');
     }
+
+    $sumaTotal = $query->sum('solicitudes.precio_total');
+    return view('solicitudes.index', compact('solicitudes', 'sumaTotal', 'keyword', 'menu'));
+}
 
     /**
      *

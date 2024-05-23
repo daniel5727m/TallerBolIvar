@@ -140,8 +140,6 @@ Route::post('perfil/actualizarContrasena', [App\Http\Controllers\PerfilControlle
 Route::post('reset/actualizarContrasena', [App\Http\Controllers\Auth\ResetPasswordController::class, 'updatePasswordReset'])->name('resetPassword.updatePasswordReset');
 
 
-
-
 /**Ruta de correo electronico verificar */
 Route::get('email/verify',  function () {
     return view('auth.verify');
