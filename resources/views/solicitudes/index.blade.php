@@ -22,7 +22,7 @@
             </style>
 
             <div class="card" style="margin-top: -165px;">
-                <div class="card-body" style="margin-top: -5px;">
+                <div class="card-body" style="margin-top: -8px;">
                     <h2 style="margin-top: 25px;"><b> Solicitudes</b></h2>
                     @if (Session::has('flash_message'))
                         <div class="alert alert-success" role="alert">
@@ -56,16 +56,20 @@
                                         <td>{{ $item->tipo_material }}</td>
                                         <td>{{ $item->espesor }}</td>
                                         <td>{{ $item->created_at }}</td>
-                                        <td>{{ $item->estado }}</td>
+                                        <td>
+                                            <select name="estado" onchange="handleEstadoChange(event, {{ $item->id }})">
+                                                <option value="Cotización" {{ $item->estado === 'Cotización' ? 'selected' : '' }}>Cotización</option>
+                                                <option value="Producción" {{ $item->estado === 'Producción' ? 'selected' : '' }}>Producción</option>
+                                                <option value="Entregado" {{ $item->estado === 'Entregado' ? 'selected' : '' }}>Entregado</option>
+                                            </select>
+                                        </td>
                                         <td class="precio-total" style="text-align: right;">
                                             @if ($item->precio_total !== null)
                                                 ${{ number_format($item->precio_total, 0) }}
                                             @endif
                                         </td>
-
                                         <td>
                                             <a href="{{ url('/solicitudes/' . $item->id) }}" title="Ver solicitud"><button class="btn btn-info btn-sm"><i class="fa fa-eye" aria-hidden="true"></i> </button></a>
-
                                             <form method="POST" action="{{ url('/solicitudes' . '/' . $item->id) }}" accept-charset="UTF-8" style="display:inline">
                                                 {{ method_field('DELETE') }}
                                                 {{ csrf_field() }}
@@ -73,7 +77,6 @@
                                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                                 </button>
                                             </form>
-
                                         </td>
                                     </tr>
                                 @endforeach
@@ -85,12 +88,118 @@
                                     <td></td>
                                 </tr>
                             </tbody>
-
                         </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+               // Iterar sobre cada solicitud para verificar y establecer el estado guardado
+               @foreach($solicitudes as $item)
+                   let estado_{{ $item->id }} = localStorage.getItem('estado_{{ $item->id }}');
+                   if (estado_{{ $item->id }}) {
+                       document.querySelector('#row{{ $item->id }} select[name="estado"]').value = estado_{{ $item->id }};
+                   }
+               @endforeach
+           });
+
+           function copyToClipboard(elementId) {
+       var rowData = $('#' + elementId).closest('tr').find('td').map(function() {
+           if ($(this).find('select').length) {
+               return $(this).find('select').val(); // Obtener solo el valor seleccionado del <select>
+           }
+           return $(this).text().trim(); // Quitar espacios en blanco adicionales
+       }).get();
+
+       var organizedData = rowData.slice(0, 3).join('\t') + '\t' + rowData.slice(3).join('\t');
+       navigator.clipboard.writeText(organizedData)
+           .then(() => {
+               console.log('Texto copiado al portapapeles');
+           })
+           .catch(err => {
+               console.error('Error al copiar el texto: ', err);
+           });
+
+       var textarea = document.createElement("textarea");
+       textarea.textContent = organizedData;
+       document.body.appendChild(textarea);
+
+       textarea.select();
+       document.execCommand('copy');
+
+       document.body.removeChild(textarea);
+
+       alert("Contenido copiado al portapapeles");
+   }
+
+   function copyAllToClipboard() {
+       let rows = document.querySelectorAll('#example tbody tr');
+       let textToCopy = ''; // Inicializar el texto vacío
+
+       rows.forEach((row) => {
+           let cells = row.querySelectorAll('td');
+           let rowData = [];
+
+           cells.forEach((cell, cellIndex) => {
+               if (cell.querySelector('select')) {
+                   rowData.push(cell.querySelector('select').value); // Obtener solo el valor seleccionado del <select>
+               } else {
+                   let cellText = cell.innerText.trim().replace(/\n/g, ' ');
+                   if (cellIndex === cells.length - 1) { // Última columna (Precio Total)
+                       cellText = cellText.replace(/\$/g, '').replace(/,/g, ''); // Remover símbolos de dólar y comas
+                       // Si la celda de precio está vacía, mantenerla vacía
+                       if (cellText === '') {
+                           cellText = ''; // No agregar ningún espacio
+                       } else {
+                           cellText = ' ' + cellText; // Agregar un espacio al principio del precio
+                       }
+                   }
+                   rowData.push(cellText);
+               }
+           });
+
+           // Agregar espacios adicionales entre las celdas para que el ancho sea uniforme
+           let formattedRowData = rowData.map((cellText, index) => {
+               // No agregar espacio al principio del precio
+               if (index === rowData.length - 3) {
+                   return cellText.padStart(20); // PadStart para agregar espacios al principio de la celda
+               } else {
+                   return cellText.padEnd(20); // PadEnd para agregar espacios al final de la celda
+               }
+           });
+
+           // Concatenar los datos de la fila
+           let rowText = formattedRowData.join('\t');
+           textToCopy += rowText + '\n'; // Añadir la fila a textToCopy
+       });
+
+       // Crear un elemento temporal para copiar el texto
+       let tempElement = document.createElement('textarea');
+       tempElement.style.position = 'absolute';
+       tempElement.style.left = '-9999px';
+       tempElement.value = textToCopy;
+       document.body.appendChild(tempElement);
+       tempElement.select();
+       document.execCommand('copy');
+       document.body.removeChild(tempElement);
+
+       alert('Todas las solicitudes han sido copiadas al portapapeles');
+   }
+
+   // Función para agregar espacios a la derecha de cada celda para alinearlas uniformemente
+   function padText(text, length) {
+       return text + ' '.repeat(length - text.length);
+   }
+
+   function updateEstado(selectElement, solicitudId) {
+       let nuevoEstado = selectElement.value;
+       localStorage.setItem('estado_' + solicitudId, nuevoEstado);
+
+       // Aquí puedes añadir código para enviar el nuevo estado al servidor si es necesario
+   }
+       </script>
 @endguest
 @endsection
+

@@ -159,15 +159,8 @@
                 contexto.fillText("Diametro: " + $diametro, +400, canvas.height - 240);
                 contexto.fillText("Numero de tubos: " + $numeroTubos, +400, canvas.height - 190);
                 contexto.fillText("Numero de Curvas: " + $numeroCurvas, +400, canvas.height - 140);
-                /* contexto.fillText("Nombre: " + $cliente, 300, canvas.height + 10);
-                contexto.fillText("Turno # " + $turno, +300, canvas.height + 40); */
             }
         }
-
-
-
-          // window.onload=draw_ab;
-          //window.onload=draw_curva;
 
             var tipo_trabajo= '{{ $solicitude->tipo_trabajo }}';
             var iframe_doblez = document.getElementById("iframe_doblez");
@@ -190,13 +183,14 @@
             </div>{{--  --}}
         @else
                     <div class="col-md-6" style="margin-top: -160px;">
-                        <div class="card" style="margin-top: -5px; width: 1262px; height: 1824px;">
+                        <div class="card" style="margin-top: -5px; width: 1262px; height: {{ $solicitude->tipo_trabajo == 'Doblez' ? 'auto' : 'auto' }}; padding-bottom: 97px;">
+
                             <a class="brand-link" style=" height: 180px; width: 1257px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
                                <div>
-                                <section style="margin-left:-900px; margin-top: 30px;">
-                                    <img src='{{url("/img/bolivar.png")}}' alt="" style="width: 100px; border-radius: 50%;">
+                                <section style="margin-left:-900px; margin-top: -1px;">
+                                    <img src='{{url("/img/bolivar.png")}}' alt="" style="width: 158px; border-radius: 50%;">
                                 </section>
-                                <h5 style="color:rgb(252, 249, 249); text-align: center; font-size: 120px; margin-top: -130px; margin-bottom: 20px;">Taller Bolívar</h5>
+                                <h5 style="color:rgb(252, 249, 249); padding-left: 320px; font-size: 120px; margin-top: -155px; margin-bottom: 20px;">Taller Bolívar</h5>
                                 </div>
                             </a>
                             <br>
@@ -257,7 +251,7 @@
                                 </style>
                                 <table class="table">
                                     <tbody>
-                                        <tr><th > Tipo de trabajo </th><td style="width: 35%"> {{ $solicitude->tipo_trabajo }} </td></tr>
+                                        <tr><th> Tipo de trabajo </th><td style="width: 35%"> {{ $solicitude->tipo_trabajo }} </td></tr>
                                         <!-- <tr><th> Tipo de material </th><td> {{ $solicitude->tipo_material }} </td></tr> -->
                                         <!-- <tr><th> Espesor </th><td> {{ $solicitude->espesor }} </td></tr> -->
                                         <!-- <tr><th> ¿Hay soldadura? </th><td> {{ $solicitude->hay_soldadura }} </td></tr> -->
@@ -326,7 +320,7 @@
                                         @endif
                                         <!-- <tr><th> *Observaciones </th><td> {{ $solicitude->des_solicitud }} </td></tr>	 -->
                                         <!-- <tr><th> Precio Total </th><td> ${{ number_format($solicitude->precio_total) }} </td></tr> -->
-                                        <!-- <tr><th> Estado </th><td> {{ $solicitude->estado }} </td></tr> -->
+                                        <tr><th> Estado </th><td> {{ $solicitude->estado }} </td></tr>
                                         <!-- <tr><th> precio soldadura </th><td> ${{ number_format($solicitude->precio_soldadura)}}</td></tr> -->
                                         <!-- <tr><th> precio cortes </th><td> ${{ number_format($solicitude->precio_cortes)}}</td></tr> -->
                                         <!-- <tr><th> costo doblex </th><td> ${{ ($solicitude->costo_doblex)}}</td></tr> -->

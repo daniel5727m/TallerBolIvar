@@ -219,6 +219,8 @@ caption {
 th {
   text-align: inherit;
   text-align: -webkit-match-parent;
+  width: 60%;
+  padding-left: 220px;
 }
 
 label {

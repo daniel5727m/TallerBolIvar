@@ -12,10 +12,18 @@ use App\Models\costo_doblez;
 use App\Models\costo_curva;
 use App\Models\costo_caracol;
 use App\Models\costo_ab;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\users;
+use App\Exports\SolicitudesExport;
+use App\Http\Controllers\SolicitudesController;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\Response;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Carbon\Carbon;
+
 
 class solicitudesController extends Controller
  {
@@ -80,78 +88,34 @@ class solicitudesController extends Controller
 
     // Aplicar filtro de búsqueda si se proporciona
     if (!empty($keyword)) {
-        $solicitudes = solicitude::where('tipo_trabajo', 'LIKE', "%$keyword%")
-            //->orWhere('idturno', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_Tubo', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_Tubo_cur', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_Tubo_esc', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_Tubo_escdos', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_Tubo_ab', 'LIKE', "%$keyword%")
-            ->orWhere('tipo_material', 'LIKE', "%$keyword%")
-            ->orWhere('espesor', 'LIKE', "%$keyword%")
-            ->orWhere('longitud_tubo', 'LIKE', "%$keyword%")
-            ->orWhere('angulos', 'LIKE', "%$keyword%")
-            ->orWhere('hay_soldadura', 'LIKE', "%$keyword%")
-            ->orWhere('numero_soldadura', 'LIKE', "%$keyword%")
-            ->orWhere('numero_tubos', 'LIKE', "%$keyword%")
-            ->orWhere('numero_dobleces', 'LIKE', "%$keyword%")
-            ->orWhere('numero_curvas', 'LIKE', "%$keyword%")
-            ->orWhere('hay_cortes', 'LIKE', "%$keyword%")
-            ->orWhere('numero_cortes', 'LIKE', "%$keyword%")
-            ->orWhere('sentido', 'LIKE', "%$keyword%")
-            ->orWhere('plantilla', 'LIKE', "%$keyword%")
-            ->orWhere('ancho', 'LIKE', "%$keyword%")
-            ->orWhere('altura', 'LIKE', "%$keyword%")
-            ->orWhere('radio', 'LIKE', "%$keyword%")
-            ->orWhere('largo', 'LIKE', "%$keyword%")
-            ->orWhere('hay_pasamanos', 'LIKE', "%$keyword%")
-            ->orWhere('numero_pasamanos', 'LIKE', "%$keyword%")
-            ->orWhere('numero_pasamanos_uno', 'LIKE', "%$keyword%")
-            ->orWhere('diametro_dos', 'LIKE', "%$keyword%")
-            ->orWhere('largo_total', 'LIKE', "%$keyword%")
-            ->orWhere('largo_parte_recta', 'LIKE', "%$keyword%")
-            ->orWhere('a', 'LIKE', "%$keyword%")
-            ->orWhere('b', 'LIKE', "%$keyword%")
-            ->orWhere('estado', 'LIKE', "%$keyword%")
-            ->orWhere('precio_soldadura', 'LIKE', "%$keyword%")
-            ->orWhere('precio_cortes', 'LIKE', "%$keyword%")
-            ->orWhere('costo_doblex', 'LIKE', "%$keyword%")
-            ->orWhere('costo_curvax', 'LIKE', "%$keyword%")
-            ->orWhere('precio_total', 'LIKE', "%$keyword%")
-            ->orWhere('hipotenusa', 'LIKE', "%$keyword%")
-            ->orWhere('anguloCurva', 'LIKE', "%$keyword%")
-            ->orWhere('longitudArco', 'LIKE', "%$keyword%")
-            ->orWhere('huella', 'LIKE', "%$keyword%")
-            ->orWhere('contrahuella', 'LIKE', "%$keyword%")
-            ->orWhere('diaExt', 'LIKE', "%$keyword%")
-            ->orWhere('diaInt', 'LIKE', "%$keyword%")
-            ->orWhere('anchoPel', 'LIKE', "%$keyword%")
-            ->orWhere('hipotenusaDos', 'LIKE', "%$keyword%")
-            ->orWhere('A1Dos', 'LIKE', "%$keyword%")
-            ->orWhere('Rcm', 'LIKE', "%$keyword%")
-            ->orWhere('Hcm', 'LIKE', "%$keyword%")
-            ->orWhere('zero', 'LIKE', "%$keyword%")
-            ->orWhere('costo_pasamanos', 'LIKE', "%$keyword%")
-            ->orWhere(' preciodos', 'LIKE', "%$keyword%")
-            ->orWhere(' totalCaracol', 'LIKE', "%$keyword%")
-            ->orWhere(' totalCaracolTotal', 'LIKE', "%$keyword%")
-
-            ->latest()->paginate($perPage);
-    } else {
-        $solicitudes = solicitude::latest()->paginate($perPage);
-        $solicitudes = DB::select('SELECT s.*,u.name as cliente,u.telefono FROM solicitudes s
-        left join  users u  on u.id=s.id_cliente
-    order by s.id asc');
+        $query->where(function($q) use ($keyword) {
+            // Filtrar por tipo de trabajo y otros campos de la tabla 'solicitudes' y 'users'
+            $q->whereRaw('solicitudes.tipo_trabajo LIKE ?', ["%$keyword%"])
+                ->orWhere('solicitudes.diametro_Tubo', 'LIKE', "%$keyword%")
+                ->orWhere('users.name', 'LIKE', "%$keyword%")
+                ->orWhere('users.telefono', 'LIKE', "%$keyword%");
+        });
     }
 
-    $sumaTotal = $query->sum('solicitudes.precio_total');
-    return view('solicitudes.index', compact('solicitudes', 'sumaTotal', 'keyword', 'menu'));
-}
+    // Obtener las solicitudes paginadas directamente en la consulta
+    $solicitudes = $query->latest()->paginate($perPage);
 
+    // Calcular la suma total de los precios totales de las solicitudes
+    // Podrías considerar una consulta separada para optimizar el rendimiento
+    $sumaTotal = $query->sum('solicitudes.precio_total');
+
+    // Retornar la vista con los datos necesarios
+    return view('solicitudes.index', compact('solicitudes', 'menu', 'sumaTotal', 'keyword'));
+}
     /**
      *
      * @return \Illuminate\View\View
      */
+
+     public function exportar($tipo_trabajo = null)
+     {
+         return (new SolicitudesExport($tipo_trabajo))->toResponse(request());
+     }
 
     public function create()
     {
@@ -169,45 +133,50 @@ class solicitudesController extends Controller
         return view('solicitudes.create',compact('menu','clientes','costo_doblezs','costo_curvas','costo_caracols','costo_abs'));
 
     }
-     public function createDos()
-    {
-        //$costo_doblezs=DB::select('SELECT * FROM costo_doblezs');
-        //$costo_curvas=DB::select('SELECT * FROM costo_curvas');
 
-       // return view('solicitudes.createDos',compact('menu','clientes','costo_curvas'));
-
-    }
-
-
-    /**
-     *
-     * @return \Illuminate\View\View
-     */
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            /* 'tipo_trabajo' => 'required',
-            'largo_parte_recta' => 'required_if:tipo_trabajo,Escalera caracol',
-            'ancho' => 'required_if:tipo_trabajo = Curva tipo arco',
-            'altura' => 'required_if:tipo_trabajo = Curva tipo arco',
+        $request->validate([
+            'tipo_trabajo' => 'required',
+            'id_cliente' => 'required',
+            'hay_cortes' => 'required_if:tipo_trabajo,Doblez,Curva,Escalera caracol,ab',
+            'hay_soldadura' => 'required_if:tipo_trabajo,Doblez,Curva,Escalera caracol,ab',
+            'numero_dobleces' => 'required_if:tipo_trabajo,Doblez',
+            'numero_tubos' => 'required_if:tipo_trabajo,Doblez',
+            'ancho' => 'required_if:tipo_trabajo,Curva',
+            'altura' => 'required_if:tipo_trabajo,Curva',
             'huella' => 'required_if:tipo_trabajo,Escalera caracol',
             'contrahuella' => 'required_if:tipo_trabajo,Escalera caracol',
-            'diaExt' => 'required_if:tipo_trabajo,Doblez,Escalera caracol',
-            'diaInt' => 'required_if:tipo_trabajo,Doblez,Escalera caracol',
-            'anchoPel' => 'required_if:tipo_Escalera caracol', */
-
+            'diaExt' => 'required_if:tipo_trabajo,Escalera caracol',
+            'diaInt' => 'required_if:tipo_trabajo,Escalera caracol',
+            'anchoPel' => 'required_if:tipo_trabajo,Escalera caracol',
+            // Las nuevas validaciones para 'ab' solo se aplican cuando el tipo de trabajo es 'ab'
+            'diametro_Tubo_ab' => 'required_if:tipo_trabajo,ab',
+            'largo_total' => 'required_if:tipo_trabajo,ab',
+            'largo_parte_recta' => 'required_if:tipo_trabajo,ab',
+            'a' => 'required_if:tipo_trabajo,ab',
+            'b' => 'required_if:tipo_trabajo,ab',
+        ], [
+            'tipo_trabajo.required' => '¡Debe seleccionar un tipo de trabajo!',
+            'id_cliente.required' => '¡El campo ID cliente es obligatorio!',
+            'hay_cortes.required_if' => '¡El campo ¿hay cortes? es obligatorio para este tipo de trabajo!',
+            'hay_soldadura.required_if' => '¡El campo ¿hay soldadura? es obligatorio para este tipo de trabajo!',
+            'numero_dobleces.required_if' => '¡El campo "Cantidad de dobleces" es obligatorio para el tipo de trabajo "doblez"!',
+            'numero_tubos.required_if' => '¡El campo "Cantidad de tubos" es obligatorio para el tipo de trabajo "doblez"!',
+            'ancho.required_if' => '¡El campo "ancho" es obligatorio para el tipo de trabajo "Curva"!',
+            'altura.required_if' => '¡El campo "altura" es obligatorio para el tipo de trabajo "Curva"!',
+            'huella.required_if' => '¡El campo "huella" es obligatorio para el tipo de trabajo "Escalera caracol"!',
+            'contrahuella.required_if' => '¡El campo "contrahuella" es obligatorio para el tipo de trabajo "Escalera caracol"!',
+            'diaExt.required_if' => '¡El campo "Diametro Ext (cm)" es obligatorio para el tipo de trabajo "Escalera caracol"!',
+            'diaInt.required_if' => '¡El campo "Diametro Int (cm)" es obligatorio para el tipo de trabajo "Escalera caracol"!',
+            'anchoPel.required_if' => '¡El campo "Ancho Peldaño (cm)" es obligatorio para el tipo de trabajo "Escalera caracol"!',
+            'diametro_Tubo_ab.required_if' => '¡El campo "Diametro AB" es obligatorio para el tipo de trabajo "ab"!',
+            'largo_total.required_if' => '¡El campo "Largo Total" es obligatorio para el tipo de trabajo "ab"!',
+            'largo_parte_recta.required_if' => '¡El campo "Largo Parte Recta" es obligatorio para el tipo de trabajo "ab"!',
+            'a.required_if' => '¡El campo "A (alto)" es obligatorio para el tipo de trabajo "ab"!',
+            'b.required_if' => '¡El campo "B (largo)" es obligatorio para el tipo de trabajo "ab"!',
         ]);
-        $request->validate([    'tipo_trabajo' => 'required',    'id_cliente' => 'required',    'hay_cortes' => 'required_if:tipo_trabajo,Doblez,Curva,Escalera caracol,ab',    'hay_soldadura' => 'required_if:tipo_trabajo,Doblez,Curva,Escalera caracol,ab',], [    'tipo_trabajo.required' => '¡Debe seleccionar un tipo de trabajo!.', 'hay_cortes.required_if' => '¡El campo ¿hay cortes? es obligatorio para este tipo de trabajo!',    'hay_soldadura.required_if' => '¡El campo ¿hay soldadura? es obligatorio para este tipo de trabajo!',]);
-        //error_log((string)$request);
+
         $requestData = $request->all();
         $variable = variable::findOrFail(1);
         $objeto = new MenuController();
@@ -269,6 +238,8 @@ class solicitudesController extends Controller
 
               $requestData['precio_total'] = $precio_total;
 
+                // Llamada para actualizar el archivo Excel
+                $this->updateExcel($solicitude);
 
                solicitude::create($requestData);
                return redirect('solicitudes')->with('flash_message', '¡Solicitud adicionada!');
@@ -682,6 +653,22 @@ class solicitudesController extends Controller
             return view('solicitudes.edit', compact('solicitude'));
         }
 
+        public function exportExcel($id)
+        {
+            $solicitud = Solicitude::findOrFail($id);
+            return Excel::download(new SolicitudesExport($solicitud), 'solicitud_'.$id.'.xlsx');
+        }
+
+        public function updateEstadoRedirect(Request $request, Solicitude $solicitude)
+        {
+            $solicitude->estado = $request->estado;
+            $solicitude->save();
+
+            return redirect()->route('solicitudes.show', $solicitude);
+        }
+
+
+
     /**
      * Update the specified resource in storage.
      *
@@ -701,6 +688,51 @@ class solicitudesController extends Controller
         return redirect('solicitudes')->with('flash_message', 'solicitude updated!');
     }
 
+    private function updateExcel()
+    {
+        $filePath = storage_path('app/public/Solicitudes.xlsx');
+
+        if (file_exists($filePath)) {
+            $spreadsheet = IOFactory::load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
+        } else {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Añadir encabezados si el archivo no existe
+            $sheet->setCellValue('A1', 'ID');
+            $sheet->setCellValue('B1', 'Tipo Trabajo');
+            $sheet->setCellValue('C1', 'Tipo Material');
+            $sheet->setCellValue('D1', 'Espesor de tubo');
+            $sheet->setCellValue('E1', 'Fecha Creación');
+            $sheet->setCellValue('F1', 'Estado');
+            $sheet->setCellValue('G1', 'Precio Total');
+            $sheet->setCellValue('H1', 'Cliente');
+            $sheet->setCellValue('I1', 'Teléfono');
+        }
+
+        // Obtener la última fila con datos
+        $lastRow = $sheet->getHighestRow();
+
+        // Obtener los datos del cliente
+        $cliente = DB::table('users')->find($solicitude->id_cliente);
+
+        // Añadir los datos de la nueva solicitud
+        $sheet->setCellValue('A' . ($lastRow + 1), $solicitude->id);
+        $sheet->setCellValue('B' . ($lastRow + 1), $solicitude->tipo_trabajo);
+        $sheet->setCellValue('C' . ($lastRow + 1), $solicitude->tipo_material);
+        $sheet->setCellValue('D' . ($lastRow + 1), $solicitude->espesor);
+        $sheet->setCellValue('E' . ($lastRow + 1), Carbon::parse($solicitude->created_at)->format('Y-m-d H:i:s'));
+        $sheet->setCellValue('F' . ($lastRow + 1), $solicitude->estado);
+        $sheet->setCellValue('G' . ($lastRow + 1), $solicitude->precio_total);
+        $sheet->setCellValue('H' . ($lastRow + 1), $cliente->name);
+        $sheet->setCellValue('I' . ($lastRow + 1), $cliente->telefono);
+
+        // Guardar el archivo Excel
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -712,8 +744,7 @@ class solicitudesController extends Controller
     {
         solicitude::destroy($id);
 
-        return redirect('solicitudes')->with('flash_message', 'solicitude deleted!');
+        return redirect('solicitudes')->with('flash_message', '¡La solicitud ha sido eliminada!');
     }
 
     }
-

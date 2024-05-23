@@ -8,6 +8,7 @@ use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use App\Http\Controllers\PerfilController;
 use App\Models\Menu;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\SolicitudExportController;
 
 
 /*
@@ -88,11 +89,16 @@ Route::get('/nuwwe/destroy', [App\Http\Controllers\NuwweController::class, 'dest
 Route::get('solicitudes', [App\Http\Controllers\solicitudesController::class, 'index'])->name('solicitudes.index')->middleware(['auth', 'verified']);
 Route::put('solicitudes', [App\Http\Controllers\solicitudesController::class, 'store'])->name('solicitudes.store')->middleware(['auth', 'verified']);
 Route::get('solicitudes/create', [App\Http\Controllers\solicitudesController::class, 'create'])->name('solicitudes.create')->middleware(['auth', 'verified']);
-//Route::get('solicitudes/createDos', [App\Http\Controllers\SolicitudesController::class, 'createDos'])->name('solicitudes.createDos')->middleware(['auth', 'verified']);
-//Route::get('solicitudes/createDos', [App\Http\Controllers\solicitudesController::class, 'create'])->name('solicitudes.createDos')->middleware(['auth', 'verified']);
+Route::post('/solicitudes/{solicitude}/estado-redirect', [App\Http\Controllers\SolicitudesController::class, 'updateEstadoRedirect'])->name('solicitudes.updateEstadoRedirect');
+// web.php
+Route::put('/solicitudes/{solicitude}', [App\Http\Controllers\SolicitudesController::class, 'updateEstado'])->name('solicitudes.updateEstado')->middleware(['auth', 'verified']);
+Route::get('/exportar/solicitudes/{tipo_trabajo?}', [SolicitudesController::class, 'exportar'])->name('exportar.solicitudes');
+Route::get('export-solicitudes', [SolicitudesController::class, 'exportSolicitudes']);
 Route::get('solicitudes/{id}', [App\Http\Controllers\solicitudesController::class, 'show'])->name('solicitudes.show')->middleware(['auth', 'verified']);
 //Route::get('solicitudes/{id}', [App\Http\Controllers\solicitudesController::class, 'show'])->name('solicitudes.show')->middleware(['auth', 'verified']);
 Route::delete('solicitudes/{solicitude}', [App\Http\Controllers\solicitudesController::class, 'destroy'])->name('solicitudes.destroy')->middleware(['auth', 'verified']);
+Route::put('/solicitudes/{solicitude}', [App\Http\Controllers\SolicitudesController::class, 'updateEstado'])->name('solicitudes.updateEstado', 'solicitudes.updateEstado' )->middleware(['auth', 'verified']);
+
 
 // INICIO NUEVOS DE PRUEBAS COPIA DE SOLICITUDES
 
@@ -118,16 +124,6 @@ Route::get('solicitudes_seguimiento_admin', [App\Http\Controllers\solicitudesCon
 Route::get('solicitudes_seguimiento_admin/{id}', [App\Http\Controllers\solicitudesController::class, 'show_seguimiento_admin'])->name('solicitudes.show_seguimiento_admin')->middleware(['auth', 'verified']);
 Route::get('solicitudes/{id}/edit', [App\Http\Controllers\solicitudesController::class, 'edit'])->name('solicitudes.edit')->middleware(['auth', 'verified']);
 Route::patch('solicitudes/{id}', [App\Http\Controllers\solicitudesController::class, 'update'])->name('solicitudes.update')->middleware(['auth', 'verified']);
-
-//Route::get('solicitudes', [App\Http\Controllers\solicitudesController::class, 'index'])->name('solicitudes');
-//Route::get('solicitudes/create', [App\Http\Controllers\solicitudesController::class, 'create'])->name('create');
-//Route::post('solicitudes/create', [App\Http\Controllers\solicitudesController::class, 'create']);
-
-
-//Route::get('solicitudes/create', [App\Http\Controllers\NuwweController::class, 'tiposolicitud'])->name('create');
-//Route::get('solicitudes/create', [App\Http\Controllers\NuwweController::class, 'inmueblesCliente'])->name('create');
-
-//Route::resource('solicitudes', [App\Http\Controllers\solicitudesController::class]);
 
 Route::get('logs', [App\Http\Controllers\logsController::class, 'index'])->name('logs.index');
 Route::put('logs', [App\Http\Controllers\logsController::class, 'store'])->name('logs.store');

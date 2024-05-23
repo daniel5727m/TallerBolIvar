@@ -22,7 +22,7 @@
             </style>
 
             <div class="card" style="margin-top: -165px;">
-                <div class="card-body" style="margin-top: -8px;">
+                <div class="card-body" style="margin-top: -5px;">
                     <h2 style="margin-top: 25px;"><b> Solicitudes</b></h2>
                     @if (Session::has('flash_message'))
                         <div class="alert alert-success" role="alert">
@@ -49,7 +49,7 @@
                             </thead>
                             <tbody>
                                 @foreach($solicitudes as $item)
-                                    <tr>
+                                    <tr id="row{{$item->id}}">
                                         <td>{{ $item->id }}</td>
                                         <td>{{ $item->tipo_trabajo }}</td>
                                         <td>{{ $item->cliente }}<br>{{ $item->telefono }}</td>
@@ -57,20 +57,42 @@
                                         <td>{{ $item->espesor }}</td>
                                         <td>{{ $item->created_at }}</td>
                                         <td>{{ $item->estado }}</td>
+
                                         <td class="precio-total" style="text-align: right;">
                                             @if ($item->precio_total !== null)
                                                 ${{ number_format($item->precio_total, 0) }}
                                             @endif
                                         </td>
-                                        <td>
-                                            <a href="{{ url('/pruebas/' . $item->id) }}" title="Ver solicitud"><button class="btn btn-info btn-sm"><i class="fa fa-eye" aria-hidden="true"></i> </button></a>
+
+                                        <td style="width: 12%">
+                                            <a href="{{ url('/pruebas/' . $item->id) }}" title="Ver solicitud" class="btn btn-info btn-sm" style="margin-bottom: 5px; width: 32px;">
+                                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                            </a>
+
                                             <form method="POST" action="{{ url('/solicitudes' . '/' . $item->id) }}" accept-charset="UTF-8" style="display:inline">
                                                 {{ method_field('DELETE') }}
                                                 {{ csrf_field() }}
-                                                <button type="submit" class="btn btn-danger btn-sm" title="Eliminar solicitud" onclick="return confirm(&quot;Confirm delete?&quot;)" style="width: 30px;">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Eliminar solicitud" onclick="return confirm(&quot;¿Está seguro que desea eliminar la solicitud?&quot;)" style="margin-bottom: 5px; width: 32px;">
                                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                                 </button>
                                             </form>
+
+                                            <a href="{{ route('exportar.solicitudes', ['tipo_trabajo' => $item->tipo_trabajo]) }}" class="btn btn-success btn-sm" title="Exportar {{ $item->tipo_trabajo }} a Excel" style="background-color: #28a745; margin-bottom: 5px; width: 32px;">
+                                                <i class="fa fa-file-excel" aria-hidden="true"></i>
+                                            </a>
+
+                                            <a href="{{ route('exportar.solicitudes') }}" class="btn btn-success btn-sm" title="Exportar todas las solicitudes a Excel" style="background-color: #045214; margin-bottom: 5px; width: 32px;">
+                                                <i class="fa fa-file-excel" aria-hidden="true"></i>
+                                            </a>
+
+                                            <button class="btn btn-success btn-sm" onclick="copyToClipboard('row{{$item->id}}')" style="background-color: #007bff; margin-bottom: 5px; width: 32px;">
+                                                <i class="fa fa-copy" aria-hidden="true"></i>
+                                            </button>
+
+                                            <button class="btn btn-success btn-sm" onclick="copyAllToClipboard()" style="background-color: #068295; margin-bottom: 5px; width: 32px">
+                                            <i class="fa fa-clipboard" aria-hidden="true"></i>
+                                            </button>
+
                                         </td>
                                     </tr>
                                 @endforeach
@@ -82,11 +104,13 @@
                                     <td></td>
                                 </tr>
                             </tbody>
+
                         </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Script de JavaScript -->
 @endguest
 @endsection

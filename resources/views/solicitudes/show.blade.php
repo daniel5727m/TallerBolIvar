@@ -26,8 +26,8 @@
 
             contexto.font = "45px Arial";
 
-            contexto.fillText("Longitud: " + $l.toFixed(0) + "cm", +340, canvas.height-166);
-            contexto.fillText("Radio: " + $h+ "cm", +338, canvas.height + 160);
+            contexto.fillText("Longitud: " + $l.toFixed(0) + "cm", +380, canvas.height-166);
+            contexto.fillText("Radio: " + $h+ "cm", +415, canvas.height + 160);
             contexto.fillText("Altura: " + $Altura, +120, canvas.height -20);
         }
     }
@@ -66,7 +66,7 @@
         }
 
         function drawManoDerecha() {
-        var offsetX = -10; // Valor de desplazamiento hacia la derecha, puedes ajustarlo según tu necesidad
+        var offsetX = 45; // Valor de desplazamiento hacia la derecha, puedes ajustarlo según tu necesidad
         var $x = 300 + offsetX; // Aumenta la coordenada X para mover hacia la derecha
         var $y = 125;
         var $xf = $x - $contrahuella * 3.5;
@@ -96,7 +96,7 @@
         }
 
         function drawManoIzquierda() {
-            var offsetX = 65; // Valor de desplazamiento hacia la izquierda, puedes ajustarlo según tu necesidad
+            var offsetX = 35; // Valor de desplazamiento hacia la izquierda, puedes ajustarlo según tu necesidad
 
         var $xf = $x - offsetX + $contrahuella * 3.5;
         var $yf = $y;
@@ -143,7 +143,7 @@
             contexto.lineWidth = 2;
             contexto.scale(0.55,0.55);
 
-            var centerX = canvas.width / 2;
+            var centerX = canvas.width / 3;
             var centerY = canvas.height / 2;
             contexto.font = "25px Arial";
 
@@ -152,13 +152,13 @@
             contexto.quadraticCurveTo(centerX + $l/2 + $b, centerY, centerX + $l/2 + $b, centerY + $a);
             contexto.stroke();
 
-            contexto.fillText("A: " + $a , 360, canvas.height - 170);
-            contexto.fillText("B: " + $b + "cm", + 360, canvas.height - 140);
-            contexto.fillText("Largo parte recta: " + $l + "cm", + 360, canvas.height - 110);
-            contexto.fillText("Longitud Total: " + $longitudTotal + "cm", + 360, canvas.height - 80);
-            contexto.fillText("Diametro: " + $diametro, + 360, canvas.height - 50);
-            contexto.fillText("Numero de tubos: " + $numeroTubos, + 360, canvas.height - 20);
-            contexto.fillText("Numero de Curvas: " + $numeroCurvas, + 360, canvas.height + 10);
+            contexto.fillText("A: " + $a , 320, canvas.height - 170);
+            contexto.fillText("B: " + $b + "cm", + 320, canvas.height - 140);
+            contexto.fillText("Largo parte recta: " + $l + "cm", + 320, canvas.height - 110);
+            contexto.fillText("Longitud Total: " + $longitudTotal + "cm", + 320, canvas.height - 80);
+            contexto.fillText("Diametro: " + $diametro, + 320, canvas.height - 50);
+            contexto.fillText("Numero de tubos: " + $numeroTubos, + 320, canvas.height - 20);
+            contexto.fillText("Numero de Curvas: " + $numeroCurvas, + 320, canvas.height + 10);
         }
     }
 
@@ -201,21 +201,33 @@
                                 </button>
                             </form>
 
+                            @if ($solicitude->estado === 'Producción')
+
                             <a href="{{ url('/pruebas') }}/{{ $solicitude->id }}" title="Go to Turn" class="btn btn-danger btn-sm" style="width:140px" target="_blank">
                                 <i class="fa fa-clock-o" aria-hidden="true"></i> Turno
                             </a>
+                            @elseif ($solicitude->estado === 'Entregado')
+                            <button class="btn btn-danger btn-sm" style="width:140px" target="_blank" onclick="alert('El trabajo fue entregado');">
+                                <i class="fa fa-clock-o" aria-hidden="true"></i> Turno
+                            </button>
+                            @else
+                            <button class="btn btn-danger btn-sm" style="width:140px" target="_blank" onclick="alert('La solicitud se encuentra en cotización');">
+                                <i class="fa fa-clock-o" aria-hidden="true"></i> Turno
+                            </button>
+                            @endif
+
 
 
                             <!-- Agregar la gráfica aquí -->
                             <div>
-                                <div class="table-responsive">
-                                    <hr style="width: 100%; color: #bcbcc3; height: 1.5px;">
-                                    <h2><b>{{ $solicitude->tipo_trabajo }}</b></h2>
+                                <div class="table-responsive" style="margin-bottom: -91px; margin-top: -10px;">
+                                    <hr style="width: 100%; color: #bcbcc3; height: 1.5px;"></hr>
+                                    <h2 style="margin-top: -8px;"><b>{{ $solicitude->tipo_trabajo }}</b></h2>
                                     @if($solicitude->tipo_trabajo == 'Doblez')
                                     <br>
                                     <br>
-                                        <iframe id="iframe_doblez" src="http://localhost/tallerBolivar3/resources/views/solicitudes/flechas2.blade.php" width="350" height="200" frameborder="2;"></iframe>
-                                    </div>
+{{--                                         <iframe id="iframe_doblez" src="http://localhost/tallerBolivar3/resources/views/solicitudes/flechas2.blade.php" width="390" height="200";></iframe>
+ --}}                                    </div>
                                         @else
                                         <hr style="width: 100%; color: #bcbcc3; margin-bottom: 5px">
                                         <div class="modal-body" style="overflow: hidden;">
@@ -244,10 +256,6 @@
                                             <tr><th>Número de cortes</th><td>{{ $solicitude->numero_cortes }}</td></tr>
                                             @endif
 
-                                            {{-- @if( $solicitude->tipo_trabajo =='Curva' || $solicitude->tipo_trabajo =='ab')
-                                            <tr><th> Longitud Tubo(cm) </th><td> {{ $solicitude->longitud_tubo }} </td></tr>
-                                            @endif --}}
-
                                             <tr><th> Número de tubos </th><td> {{ $solicitude->numero_tubos }} </td></tr>
 
                                             @if( $solicitude->tipo_trabajo =='Doblez')
@@ -273,15 +281,16 @@
 
                                             <tr><th> Diametro del tubo curva </th><td> {{ $solicitude->diametro_Tubo_cur}} </td></tr>
                                             <tr><th> Número de curvas </th><td> {{ $solicitude->numero_curvas }} </td></tr>
-                                            <tr><th> IPC </th><td> {{ $ipc }} </td></tr>
-                                            <tr><th> Factor2 </th><td> {{ $factor }}</td></tr>
-                                            <tr><th> factor </th><td> {{ $factor0 }} </td></tr>
                                             <tr><th> Ancho de la curva (cm)</th><td> {{ $solicitude->ancho }} </td></tr>
                                             <tr><th> Altura de la curva (cm)</th><td> {{ $solicitude->altura }} </td></tr>
                                             <tr><th> Hipotenusa </th><td> {{ intval($solicitude->hipotenusa) }} </td></tr>
                                             <tr><th> Angulo de la curva </th><td> {{ intval($solicitude->anguloCurva) }} </td></tr>
                                             <tr><th> Longitud del arco (cm) </th><td> {{ intval($solicitude->longitudArco) }} </td></tr>
                                             <tr><th> Radio de la curva (cm)</th><td> {{ intval($solicitude->radio) }} </td></tr>
+                                            <tr><th> IPC </th><td> {{ $ipc }} </td></tr>
+                                            <tr><th> Factor2 </th><td> {{ $factor }}</td></tr>
+                                            <tr><th> factor </th><td> {{ $factor0 }} </td></tr>
+
                                           <!--   <tr><th> Costo curvas</th><td>${{ number_format($solicitude->costo_curvax, 0, ',', '.') }} </td></tr>
                                              -->
 
@@ -339,7 +348,7 @@
                                     @endif
 
         <tr>
-        <tr><th> Estado </th><td> {{ $solicitude->estado }} </td></tr>
+        <tr><th> Estado </th><td> {{ "Cotización" }} </td></tr>
         <!--     <th>costo doblex</th>
             <td>
                 @if ($solicitude->costo_doblex !== null)
@@ -420,7 +429,25 @@
                 </div>
             </div>
 
+            <script>
+               document.addEventListener('DOMContentLoaded', function() {
+                const turnoBtn = document.getElementById('turno-btn');
+                const estadoSolicitud = turnoBtn.getAttribute('data-estado');
 
+                if (estadoSolicitud !== 'Producción') {
+                    turnoBtn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        alert('La solicitud se encuentra en cotización');
+                    });
+                } else if (estadoSolicitud !== 'Entregado') {
+                    turnoBtn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        alert('El trabajo ya fue entregado');
+                    });
+                }
+            });
+
+            </script>
         @endguest
         @endsection
                             </div>

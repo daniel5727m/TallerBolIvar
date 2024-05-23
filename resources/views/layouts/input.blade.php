@@ -118,13 +118,7 @@
 } );
 </script>
 
-<style>
 
-input[type="search"] {
-  -webkit-appearance: searchfield;
-}
-input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: searchfield-cancel-button;
-}</style>
+</style>
 </body>
 </html>
